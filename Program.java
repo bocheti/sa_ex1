@@ -1,6 +1,5 @@
 import java.io.*;
 import java.net.*;
-import java.nio.file.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -87,19 +86,21 @@ public class Program {
     private static void sendFile(String host, int port, String filePath) throws IOException {
         try (Socket socket = new Socket(host, port);
              FileInputStream fileInputStream = new FileInputStream(filePath);
-             OutputStream out = socket.getOutputStream()) {
+             DataOutputStream dataOut = new DataOutputStream(socket.getOutputStream())) {
+
             File file = new File(filePath);
+
             // Send the file name first
-            PrintWriter writer = new PrintWriter(out, true);
-            writer.println(file.getName());
+            dataOut.writeUTF(file.getName());
 
             // Send the file contents
             byte[] buffer = new byte[4096];
             int bytesRead;
             while ((bytesRead = fileInputStream.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
+                dataOut.write(buffer, 0, bytesRead);
             }
 
+            dataOut.flush();
             System.out.println("File sent: " + file.getName());
         }
     }
@@ -108,19 +109,19 @@ public class Program {
     private static void recvFile(int port) throws IOException {
         try (ServerSocket serverSocket = new ServerSocket(port);
              Socket socket = serverSocket.accept();
-             InputStream in = socket.getInputStream();
-             BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
+             DataInputStream dataIn = new DataInputStream(socket.getInputStream())) {
+
             System.out.println("Client connected.");
 
             // Read the file name sent by the sender
-            String fileName = reader.readLine();
+            String fileName = dataIn.readUTF();
             String newFileName = generateUniqueFileName(fileName);
 
             // Save the file
             try (FileOutputStream fileOutputStream = new FileOutputStream(newFileName)) {
                 byte[] buffer = new byte[4096];
                 int bytesRead;
-                while ((bytesRead = in.read(buffer)) != -1) {
+                while ((bytesRead = dataIn.read(buffer)) != -1) {
                     fileOutputStream.write(buffer, 0, bytesRead);
                 }
 

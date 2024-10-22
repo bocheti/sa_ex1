@@ -3,6 +3,11 @@ System Architecture exercise 1 by Salvador Espinosa
 Instructions on how to use program (Program.java):
 
 
+Compilation:
+
+javac Program.java
+
+
 Send a text:
 
 java Program send localhost 5000 "Hello, this is a test message!"
